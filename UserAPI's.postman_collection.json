@@ -1,0 +1,267 @@
+{
+  "info": {
+    "_postman_id": "c4e1d722-eeb3-425a-9087-8fa60e4e2b20",
+    "name": "UserAPI's",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51339095",
+    "_collection_link": "https://go.postman.co/collection/51339095-c4e1d722-eeb3-425a-9087-8fa60e4e2b20?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "GETmethod",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Parse response body once and handle JSON parsing errors",
+              "let responseData;",
+              "try {",
+              "    responseData = pm.response.json();",
+              "} catch (e) {",
+              "    pm.test(\"Response is valid JSON\", function () {",
+              "        pm.expect.fail(\"Failed to parse response as JSON: \" + e.message);",
+              "    });",
+              "    return;",
+              "}",
+              "",
+              "// 1. Status code validation",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(pm.response.code).to.eql(200);",
+              "    pm.expect(pm.response.status).to.eql(\"OK\");",
+              "});",
+              "",
+              "// 2. Response time and size validation",
+              "pm.test(\"Response time is below 2000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test(\"Response size is reasonable (< 1MB)\", function () {",
+              "    const oneMB = 1024 * 1024;",
+              "    pm.expect(pm.response.responseSize).to.be.below(oneMB);",
+              "});",
+              "",
+              "// 3. Content-Type header validation",
+              "pm.test(\"Content-Type header includes 'application/json'\", function () {",
+              "    pm.response.to.have.header(\"Content-Type\");",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+              "});",
+              "",
+              "// 4. Response body is a non-empty array",
+              "pm.test(\"Response body is a non-empty array\", function () {",
+              "    pm.expect(responseData).to.be.an(\"array\");",
+              "    pm.expect(responseData.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "// 5. Validate each item in the array has correct structure and types",
+              "pm.test(\"Each post item has valid structure and types\", function () {",
+              "    responseData.forEach(function (item, index) {",
+              "        // Check 'id' is a number",
+              "        pm.expect(item.id, `Item ${index}: 'id' should be a number`).to.be.a(\"number\");",
+              "        ",
+              "        // Check 'user_id' is a positive integer",
+              "        pm.expect(item.user_id, `Item ${index}: 'user_id' should be a number`).to.be.a(\"number\");",
+              "        pm.expect(item.user_id, `Item ${index}: 'user_id' should be positive`).to.be.above(0);",
+              "        pm.expect(Number.isInteger(item.user_id), `Item ${index}: 'user_id' should be an integer`).to.be.true;",
+              "        ",
+              "        // Check 'title' is a string with length > 5",
+              "        pm.expect(item.title, `Item ${index}: 'title' should be a string`).to.be.a(\"string\");",
+              "        pm.expect(item.title.length, `Item ${index}: 'title' length should be > 5`).to.be.above(5);",
+              "        ",
+              "        // Check 'body' is a string",
+              "        pm.expect(item.body, `Item ${index}: 'body' should be a string`).to.be.a(\"string\");",
+              "    });",
+              "});",
+              "",
+              "// 6. Check for no duplicate 'id' values",
+              "pm.test(\"No duplicate 'id' values in the array\", function () {",
+              "    const ids = responseData.map(item => item.id);",
+              "    const uniqueIds = [...new Set(ids)];",
+              "    pm.expect(ids.length, \"All IDs should be unique\").to.eql(uniqueIds.length);",
+              "});",
+              "",
+              "// 7. Extract first item's id and set to collection variable",
+              "pm.test(\"First post id is extracted and saved to collection variable\", function () {",
+              "    pm.expect(responseData.length).to.be.greaterThan(0);",
+              "    const firstPostId = responseData[0].id;",
+              "    pm.expect(firstPostId).to.be.a(\"number\");",
+              "    pm.collectionVariables.set(\"firstPostId\", firstPostId);",
+              "    console.log(\"Set collection variable 'firstPostId' to: \" + firstPostId);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{url}}/public/v2/posts",
+          "host": [
+            "{{url}}"
+          ],
+          "path": [
+            "public",
+            "v2",
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CreateUser",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response time is less than 200ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(500);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "56f5b1faf2707c1f4b2afb649cff9bccc53ee1a53a208ec8d66791007dec911b",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n        \"id\": 8337051,\r\n        \"name\": \"{{Username}}\",\r\n        \"email\": \"Ram@hermann.test\",\r\n        \"gender\": \"male\",\r\n        \"status\": \"active\"\r\n        \r\n          }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://gorest.co.in/public/v2/users",
+          "protocol": "https",
+          "host": [
+            "gorest",
+            "co",
+            "in"
+          ],
+          "path": [
+            "public",
+            "v2",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{url}}/public/v2/users",
+          "host": [
+            "{{url}}"
+          ],
+          "path": [
+            "public",
+            "v2",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "firstPostId",
+      "value": ""
+    }
+  ]
+}
